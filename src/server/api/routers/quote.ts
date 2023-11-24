@@ -17,7 +17,7 @@ export enum ParagraphType {
 }
 
 async function getWordList(db: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>)  {
-  let wordList = await db.wordList.findFirst();
+  const wordList = await db.wordList.findFirst();
   if (!wordList) {
     throw new Error("No word list found");
   }
@@ -25,9 +25,9 @@ async function getWordList(db: PrismaClient<Prisma.PrismaClientOptions, never, D
 }
 
 function getNRandomWords(words: string[], n: number) {
-  let randomWords = [];
+  const randomWords = [];
   for (let i = 0; i < n; i++) {
-    let randomIndex = Math.floor(Math.random() * words.length);
+    const randomIndex = Math.floor(Math.random() * words.length);
     randomWords.push(words[randomIndex]);
   }
   return randomWords.join(" ");
@@ -36,8 +36,8 @@ function getNRandomWords(words: string[], n: number) {
 export const quoteRouter = createTRPCRouter({
   getRandomQuote: publicProcedure.query(async ({ ctx }) => {
     // Get a random quote from the database
-    let quotes = await ctx.db.quote.findMany();
-    let randomIndex = Math.floor(Math.random() * quotes.length);
+    const quotes = await ctx.db.quote.findMany();
+    const randomIndex = Math.floor(Math.random() * quotes.length);
     return quotes[randomIndex];
   }),
 

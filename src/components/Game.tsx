@@ -137,75 +137,77 @@ export function Game({ paragraphType, inputText, inputSetter, inputFocus }: { pa
 
 function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inputText: string, inputFocus: boolean }) {
   return (
-    <div className="text-3xl max-w-[80%]">
-      {/* For every correct character in the input make it text-main-50 and for every incorrect character make it red and text-main-400 if not yet typed */}
-      {
-        (() => {
-          const inputWords = inputText.split(" ");
-          const quoteWords = quoteText.split(" ");
-          const elements: JSX.Element[] = [];
+    <div className={`text-3xl max-w-[80%] relative`}>
+      <p className={`absolute top-[40%] left-1/2 translate-x-[-50%] translate-y-[-50%] text-main-200 text-xl transition-all ${(inputFocus) ? "opacity-0" : "opacity-100"}`}>Click to start typing</p>
+      <div className={`h-full w-full text-left transition-all ${(inputFocus) ? "blur-none" : "blur-md"}`}>
+        {
+          (() => {
+            const inputWords = inputText.split(" ");
+            const quoteWords = quoteText.split(" ");
+            const elements: JSX.Element[] = [];
 
-          const cursorStyle = inputFocus ? "before:content-[''] before:w-[2px] before:h-6 before:bg-main-100 before:inline-block ml-[-2px] before:animate-pulse" : "";
+            const cursorStyle = inputFocus ? "before:content-[''] before:w-[2px] before:h-6 before:bg-main-100 before:inline-block ml-[-2px] before:animate-pulse" : "";
 
-          // Handle already typed words character by character
-          for (const [inputWordIndex, inputWord] of inputWords.entries()) {
-            const quoteWord = quoteWords[inputWordIndex];
-            let addCursorBeforeSpace = false;
+            // Handle already typed words character by character
+            for (const [inputWordIndex, inputWord] of inputWords.entries()) {
+              const quoteWord = quoteWords[inputWordIndex];
+              let addCursorBeforeSpace = false;
 
-            if (quoteWord !== undefined) {
-              // Compare characters in the typed word to the quote word
-              for (const [quoteCurrentWordLetterIndex, quoteCurrentWordLetter] of quoteWord.split("").entries()) {
-                if (quoteCurrentWordLetterIndex >= inputWord.length) {
-                  // Handle the cursor
-                  if (inputWordIndex === inputWords.length - 1 && quoteCurrentWordLetterIndex === inputWord.length) {
-                    elements.push(<span className={`text-main-400 ${cursorStyle}`}>{quoteCurrentWordLetter}</span>);
-                  } else {
-                    elements.push(<span className={`text-main-400`}>{quoteCurrentWordLetter}</span>);
+              if (quoteWord !== undefined) {
+                // Compare characters in the typed word to the quote word
+                for (const [quoteCurrentWordLetterIndex, quoteCurrentWordLetter] of quoteWord.split("").entries()) {
+                  if (quoteCurrentWordLetterIndex >= inputWord.length) {
+                    // Handle the cursor
+                    if (inputWordIndex === inputWords.length - 1 && quoteCurrentWordLetterIndex === inputWord.length) {
+                      elements.push(<span className={`text-main-400 ${cursorStyle}`}>{quoteCurrentWordLetter}</span>);
+                    } else {
+                      elements.push(<span className={`text-main-400`}>{quoteCurrentWordLetter}</span>);
+                    }
+                    continue;
                   }
-                  continue;
+
+                  const reachedEndOfWord = quoteCurrentWordLetterIndex >= quoteWord.length - 1;
+                  const isLastWord = inputWordIndex >= inputWords.length - 1;
+                  addCursorBeforeSpace = reachedEndOfWord && isLastWord;
+
+                  const inputCurrentWordLetter = inputWord[quoteCurrentWordLetterIndex];
+                  if (quoteCurrentWordLetter !== inputCurrentWordLetter) {
+                    elements.push(<span className={`text-red-400 $()`}>{quoteCurrentWordLetter}</span>);
+                  } else {
+                    elements.push(<span className={`text-main-50`}>{quoteCurrentWordLetter}</span>);
+                  }
                 }
 
-                const reachedEndOfWord = quoteCurrentWordLetterIndex >= quoteWord.length - 1;
-                const isLastWord = inputWordIndex >= inputWords.length - 1;
-                addCursorBeforeSpace = reachedEndOfWord && isLastWord;
-
-                const inputCurrentWordLetter = inputWord[quoteCurrentWordLetterIndex];
-                if (quoteCurrentWordLetter !== inputCurrentWordLetter) {
-                  elements.push(<span className={`text-red-400 $()`}>{quoteCurrentWordLetter}</span>);
+                // Handle characters typed beyond the word in the quote
+                if (inputWord.length > quoteWord.length) {
+                  for (const [extraLetterIndex, extraLetter] of inputWord.slice(quoteWord.length).split("").entries()) {
+                    elements.push(<span className={`text-red-400`}>{extraLetter}</span>);
+                  }
+                }
+                // Handle space
+                // Add cursor if we are at the end of the last typed word
+                if (addCursorBeforeSpace) {
+                  elements.push(<span className={`text-main-400 ${cursorStyle}`}> </span>);
                 } else {
-                  elements.push(<span className={`text-main-50`}>{quoteCurrentWordLetter}</span>);
+                  elements.push(<span> </span>);
                 }
+              }
+            }
+
+            // Hendle not yet typed words
+            for (const [wordIndex, word] of quoteWords.slice(inputWords.length).entries()) {
+              for (const [letterIndex, letter] of word.split("").entries()) {
+                elements.push(<span className={`text-main-400`}>{letter}</span>);
               }
 
-              // Handle characters typed beyond the word in the quote
-              if (inputWord.length > quoteWord.length) {
-                for (const [extraLetterIndex, extraLetter] of inputWord.slice(quoteWord.length).split("").entries()) {
-                  elements.push(<span className={`text-red-400`}>{extraLetter}</span>);
-                }
-              }
               // Handle space
-              // Add cursor if we are at the end of the last typed word
-              if (addCursorBeforeSpace) {
-                elements.push(<span className={`text-main-400 ${cursorStyle}`}> </span>);
-              } else {
-                elements.push(<span> </span>);
-              }
-            }
-          }
-
-          // Hendle not yet typed words
-          for (const [wordIndex, word] of quoteWords.slice(inputWords.length).entries()) {
-            for (const [letterIndex, letter] of word.split("").entries()) {
-              elements.push(<span className={`text-main-400`}>{letter}</span>);
+              elements.push(<span> </span>);
             }
 
-            // Handle space
-            elements.push(<span> </span>);
-          }
-
-          return elements;
-        })()
-      }
+            return elements;
+          })()
+        }
+      </div>
     </div>
   );
 }

@@ -102,7 +102,7 @@ export function Game({ paragraphType, inputText, inputSetter, inputFocus }: { pa
       }
 
       setQuoteElapsedTime(Date.now() - quoteStartTime);
-    } else {
+    } else if (latestLetter !== " ") {
       setQuoteTypoCount((prev) => prev + 1);
     }
 

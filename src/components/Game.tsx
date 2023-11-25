@@ -1,11 +1,12 @@
 import { api } from "@/utils/api";
 import { useEffect, useState } from 'react';
-import { Loading } from "@/components/Loading";
+import { Spinner, Button, Kbd } from "flowbite-react";
 
-export function Game() {
-  const quote = api.quote.getRandomQuote.useQuery();
+export function Game({ paragraphType, inputText, inputSetter, inputFocus }: { paragraphType: ParagraphType, inputText: string, inputSetter: (inputText: string) => void, inputFocus: boolean }) {
+  // const quote = api.quote.getRandomQuote.useQuery();
+  const quote = api.quote.getParagraph.useQuery({ type: paragraphType });
+  const quoteIndex = (inputText.length - 1 > 0) ? inputText.length - 1 : 0;
 
-  const [quoteIndex, setQuoteIndex] = useState(0);
   const [quoteTypoCount, setQuoteTypoCount] = useState(0);
   const [quoteStartTime, setQuoteStartTime] = useState(0);
   const [quoteElapsedTime, setQuoteElapsedTime] = useState(0);
@@ -16,20 +17,20 @@ export function Game() {
   function getNewQuote() {
     quote.remove();
     quote.refetch().then(() => {
-      setQuoteIndex(0);
       setQuoteTypoCount(0);
       setQuoteStartTime(0);
       setQuoteElapsedTime(0);
       setQuoteWPM(0);
       setQuoteAccuracy(0);
       setQuoteCompleted(false);
+      inputSetter("");
     }).catch((err) => {
       console.error(err);
     });
   }
 
   function calculateWPM() {
-    const words = quote.data?.text.slice(0, quoteIndex).split(" ");
+    const words = quote.data?.slice(0, quoteIndex).split(" ");
     const wordCount = words?.length;
     const timeInMinutes = quoteElapsedTime / 1000 / 60;
     if (timeInMinutes === 0 || wordCount === 0 || wordCount === undefined) {
@@ -48,6 +49,7 @@ export function Game() {
     }
   }
 
+  // Handle reset shortcuts
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
 
@@ -56,75 +58,188 @@ export function Game() {
     };
   }, [handleKeyDown]);
 
-
   function handleKeyDown(event: KeyboardEvent) {
-    const { key } = event;
+    if ((event.key === "Escape" || event.key === "Enter") && quoteCompleted) {
+      getNewQuote();
+    }
+  }
+
+  // Paragraph type changed
+  useEffect(() => {
+    getNewQuote();
+
+    return () => {
+      quote.remove();
+    };
+  }, [paragraphType]);
+
+  // Handle text input
+  useEffect(() => {
+    handleInput(inputText);
+  }, [inputText]);
+
+  function handleInput(inputText: string) {
+    const inputWordCount = inputText.split(" ").length;
+    const quoteWordCount = quote.data?.split(" ").length;
+
+    const latestWord = inputText.split(" ").at(-1);
+    const latestWordLength = latestWord?.length;
+    const quoteCurrentWord = quote.data?.split(" ").at(inputWordCount - 1);
+
+    const latestLetter = inputText.at(-1);
+    const quoteCurrentLetter = quoteCurrentWord?.at((latestWordLength ?? 1) - 1);
 
     // Handle game logic
-    if (key === quote.data?.text[quoteIndex]) {
+    if (latestLetter === quoteCurrentLetter) {
       // Check if we are at the start of the quote
-      if (quoteIndex === 0) {
+      if (inputText.length === 1) {
         setQuoteStartTime(Date.now());
       }
 
-      // Check if we are at the end of the quote
-      if (quoteIndex === quote.data.text.length - 1) {
+      // Check if we are at the end of the quote by making sure the last word is correct
+      if (inputWordCount === quoteWordCount && latestWord === quoteCurrentWord && latestWordLength === quoteCurrentWord?.length) {
         setQuoteCompleted(true);
       }
 
-      setQuoteIndex((prev) => prev + 1);
       setQuoteElapsedTime(Date.now() - quoteStartTime);
-    } else if (key === "Backspace") {
-      // Check if last character was a space
-      if (quoteIndex > 0 && quote.data?.text[quoteIndex - 1] === " ") {
-        setQuoteIndex((prev) => prev - 1);
-      }
-    } else if (key.length === 1) { // Is not shift, control, alt, command, option, caps lock, or tab
+    } else {
       setQuoteTypoCount((prev) => prev + 1);
     }
 
     setQuoteWPM(calculateWPM());
     setQuoteAccuracy(calculateAccuracy());
-
-    // Handle reset
-    if (key === "Escape" || key === "Enter") {
-      getNewQuote();
-    }
   }
 
   return <>
-    <div className="flex items-center justify-center gap-4">
-      <div className="flex flex-col items-center justify-center gap-2">
+    <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center gap-2">
         <p className="text-2xl text-main-100">Time</p>
         <p className="text-2xl text-main-100">{quoteElapsedTime / 1000}s</p>
       </div>
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center gap-2">
         <p className="text-2xl text-main-100">Typos</p>
         <p className="text-2xl text-main-100">{quoteTypoCount}</p>
       </div>
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center gap-2">
         <p className="text-2xl text-main-100">WPM</p>
         <p className="text-2xl text-main-100">{quoteWPM}</p>
       </div>
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center gap-2">
         <p className="text-2xl text-main-100">Accuracy</p>
         <p className="text-2xl text-main-100">{quoteAccuracy}%</p>
       </div>
     </div>
-    {quoteCompleted
-      ? <button
-        className="rounded-full bg-main-400 text-main-100 px-10 py-3 font-semibold no-underline transition hover:bg-main-500"
-        onClick={getNewQuote}
-      >New Quote</button>
-      : <>{quote.data ? <GameText quoteText={quote.data.text} index={quoteIndex} /> : <Loading />}</>}
+    { quoteCompleted
+      ? <NewQuoteBox onClick={getNewQuote} />
+      : <>{quote.data ? <GameText quoteText={quote.data} inputText={inputText} inputFocus={inputFocus} /> : <Spinner color="primary" />}</>}
   </>;
 }
 
-function GameText({ quoteText, index }: { quoteText: string, index: number }) {
+function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inputText: string, inputFocus: boolean }) {
   return (
-    <div className="text-3xl">
-      <span className="text-main-50">{quoteText.slice(0, index)}</span>
-      <span className="text-main-400">{quoteText.slice(index)}</span>
+    <div className="text-3xl max-w-[80%]">
+      {/* For every correct character in the input make it text-main-50 and for every incorrect character make it red and text-main-400 if not yet typed */}
+      {
+        (() => {
+          const inputWords = inputText.split(" ");
+          const quoteWords = quoteText.split(" ");
+          const elements: JSX.Element[] = [];
+
+          const cursorStyle = inputFocus ? "before:content-[''] before:w-[2px] before:h-6 before:bg-main-100 before:inline-block ml-[-2px] before:animate-pulse" : "";
+
+          // Handle already typed words character by character
+          for (const [inputWordIndex, inputWord] of inputWords.entries()) {
+            const quoteWord = quoteWords[inputWordIndex];
+            let addCursorBeforeSpace = false;
+
+            if (quoteWord !== undefined) {
+              // Compare characters in the typed word to the quote word
+              for (const [quoteCurrentWordLetterIndex, quoteCurrentWordLetter] of quoteWord.split("").entries()) {
+                if (quoteCurrentWordLetterIndex >= inputWord.length) {
+                  // Handle the cursor
+                  if (inputWordIndex === inputWords.length - 1 && quoteCurrentWordLetterIndex === inputWord.length) {
+                    elements.push(<span className={`text-main-400 ${cursorStyle}`}>{quoteCurrentWordLetter}</span>);
+                  } else {
+                    elements.push(<span className={`text-main-400`}>{quoteCurrentWordLetter}</span>);
+                  }
+                  continue;
+                }
+
+                const reachedEndOfWord = quoteCurrentWordLetterIndex >= quoteWord.length - 1;
+                const isLastWord = inputWordIndex >= inputWords.length - 1;
+                addCursorBeforeSpace = reachedEndOfWord && isLastWord;
+
+                const inputCurrentWordLetter = inputWord[quoteCurrentWordLetterIndex];
+                if (quoteCurrentWordLetter !== inputCurrentWordLetter) {
+                  elements.push(<span className={`text-red-400 $()`}>{quoteCurrentWordLetter}</span>);
+                } else {
+                  elements.push(<span className={`text-main-50`}>{quoteCurrentWordLetter}</span>);
+                }
+              }
+
+              // Handle characters typed beyond the word in the quote
+              if (inputWord.length > quoteWord.length) {
+                for (const [extraLetterIndex, extraLetter] of inputWord.slice(quoteWord.length).split("").entries()) {
+                  elements.push(<span className={`text-red-400`}>{extraLetter}</span>);
+                }
+              }
+              // Handle space
+              // Add cursor if we are at the end of the last typed word
+              if (addCursorBeforeSpace) {
+                elements.push(<span className={`text-main-400 ${cursorStyle}`}> </span>);
+              } else {
+                elements.push(<span> </span>);
+              }
+            }
+          }
+
+          // Hendle not yet typed words
+          for (const [wordIndex, word] of quoteWords.slice(inputWords.length).entries()) {
+            for (const [letterIndex, letter] of word.split("").entries()) {
+              elements.push(<span className={`text-main-400`}>{letter}</span>);
+            }
+
+            // Handle space
+            elements.push(<span> </span>);
+          }
+
+          return elements;
+        })()
+      }
     </div>
   );
+}
+
+function NewQuoteBox({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-10 z-20">
+      <Button color="primary" onClick={onClick} size="xl" className="text-2xl px-6 py-3">New Quote</Button>
+      <p className="text-2xl text-main-100">Or press <Kbd>Enter</Kbd> to restart</p>
+    </div>
+  );
+}
+
+export enum ParagraphType {
+  Quote = "quote",
+  WORDS_20 = "20words",
+  WORDS_50 = "50words",
+  WORDS_100 = "100words",
+  WORDS_200 = "200words",
+}
+
+export function paragraphTypeFromStr(paragraphTypeStr: string): ParagraphType {
+  switch (paragraphTypeStr) {
+    case "quote":
+      return ParagraphType.Quote;
+    case "20words":
+      return ParagraphType.WORDS_20;
+    case "50words":
+      return ParagraphType.WORDS_50;
+    case "100words":
+      return ParagraphType.WORDS_100;
+    case "200words":
+      return ParagraphType.WORDS_200;
+    default:
+      return ParagraphType.Quote;
+  }
 }

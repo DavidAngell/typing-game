@@ -140,6 +140,7 @@ function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inp
     <div className={`text-3xl max-w-[80%] relative`}>
       <p className={`absolute top-[40%] left-1/2 translate-x-[-50%] translate-y-[-50%] text-main-200 text-xl transition-all ${(inputFocus) ? "opacity-0" : "opacity-100"}`}>Click to start typing</p>
       <div className={`h-full w-full text-left transition-all ${(inputFocus) ? "blur-none" : "blur-md"}`}>
+        <p className=" break-words">
         {
           (() => {
             const inputWords = inputText.split(" ");
@@ -159,9 +160,9 @@ function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inp
                   if (quoteCurrentWordLetterIndex >= inputWord.length) {
                     // Handle the cursor
                     if (inputWordIndex === inputWords.length - 1 && quoteCurrentWordLetterIndex === inputWord.length) {
-                      elements.push(<span className={`text-main-400 ${cursorStyle}`}>{quoteCurrentWordLetter}</span>);
+                      elements.push(<span key={`${inputWordIndex}-${quoteCurrentWordLetterIndex}`} className={`text-main-400 ${cursorStyle}`}>{quoteCurrentWordLetter}</span>);
                     } else {
-                      elements.push(<span className={`text-main-400`}>{quoteCurrentWordLetter}</span>);
+                      elements.push(<span key={`${inputWordIndex}-${quoteCurrentWordLetterIndex}`} className={`text-main-400`}>{quoteCurrentWordLetter}</span>);
                     }
                     continue;
                   }
@@ -172,24 +173,24 @@ function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inp
 
                   const inputCurrentWordLetter = inputWord[quoteCurrentWordLetterIndex];
                   if (quoteCurrentWordLetter !== inputCurrentWordLetter) {
-                    elements.push(<span className={`text-red-400 $()`}>{quoteCurrentWordLetter}</span>);
+                    elements.push(<span key={`${inputWordIndex}-${quoteCurrentWordLetterIndex}`} className={`text-red-400 $()`}>{quoteCurrentWordLetter}</span>);
                   } else {
-                    elements.push(<span className={`text-main-50`}>{quoteCurrentWordLetter}</span>);
+                    elements.push(<span key={`${inputWordIndex}-${quoteCurrentWordLetterIndex}`} className={`text-main-50`}>{quoteCurrentWordLetter}</span>);
                   }
                 }
 
                 // Handle characters typed beyond the word in the quote
                 if (inputWord.length > quoteWord.length) {
                   for (const [extraLetterIndex, extraLetter] of inputWord.slice(quoteWord.length).split("").entries()) {
-                    elements.push(<span className={`text-red-400`}>{extraLetter}</span>);
+                    elements.push(<span key={`${inputWordIndex}-${extraLetterIndex}`} className={`text-red-400`}>{extraLetter}</span>);
                   }
                 }
                 // Handle space
                 // Add cursor if we are at the end of the last typed word
                 if (addCursorBeforeSpace) {
-                  elements.push(<span className={`text-main-400 ${cursorStyle}`}> </span>);
+                  elements.push(<span key={`${inputWordIndex}-space`} className={`text-main-400 ${cursorStyle}`}> </span>);
                 } else {
-                  elements.push(<span> </span>);
+                  elements.push(<span key={`${inputWordIndex}-space`}> </span>);
                 }
               }
             }
@@ -197,16 +198,17 @@ function GameText({ quoteText, inputText, inputFocus }: { quoteText: string, inp
             // Hendle not yet typed words
             for (const [wordIndex, word] of quoteWords.slice(inputWords.length).entries()) {
               for (const [letterIndex, letter] of word.split("").entries()) {
-                elements.push(<span className={`text-main-400`}>{letter}</span>);
+                elements.push(<span key={`${wordIndex + inputWords.length}-${letterIndex}`} className={`text-main-400`}>{letter}</span>);
               }
 
               // Handle space
-              elements.push(<span> </span>);
+              elements.push(<span key={`${wordIndex + inputWords.length}-space`}> </span>);
             }
 
             return elements;
           })()
         }
+        </p>
       </div>
     </div>
   );

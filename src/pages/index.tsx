@@ -26,7 +26,7 @@ export default function Home() {
         </Head>
         <input 
           className="absolute opacity-0 w-full h-full top-0 left-0 z-10" 
-          autoFocus={true} 
+          // autoFocus={true} 
           type="text" 
           value={inputValue} 
           onChange={(e) => { setInputValue(e.target.value); }}

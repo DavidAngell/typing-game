@@ -4,13 +4,13 @@
 <br />
 <div align="center">
   <a href="https://github.com/DavidAngell/typing-game">
-    <img src="public/favicon.svg" alt="Logo" width="196" height="196">
+    <img src="public/favicon.png" alt="Logo">
   </a>
 
   <h3 align="center">Simple Typing Game</h3>
 
   <p align="center">
-    Source code for a typing game inspired by monkeytype.com
+    A typing game inspired by monkeytype.com
     <!-- <br />
     <a href="https://github.com/DavidAngell/typing-game"><strong>Explore the docs »</strong></a> -->
     <br />
@@ -23,6 +23,32 @@
   </p>
 </div>
 
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
+
+<!-- ABOUT THE PROJECT -->
+## About The Project
+
+[![Product Name Screen Shot][product-screenshot]](https://typing-game-ebon.vercel.app/)
+
+This is a simple typing game inspired by [monkeytype.com](https://monkeytype.com/). I created this project mainly to refresh myself with Next.js and to learn [tRPC](https://trpc.io/), [Prisma](https://prisma.io/), and [NextAuth](https://next-auth.js.org/). For the longest time I've just use [Firebase](https://firebase.google.com/) for a database, hosting, and authentication because it was the first thing that I learned, so I wanted to try out some new tools!
+
+<!-- <p align="right">(<a href="#readme-top">back to top</a>)</p> -->
 
 ### Built With
 
@@ -33,7 +59,7 @@
 [![Vercel][vercel.com]][vercel-url]
 [![PlanetScale][planet-scale.com]][planet-scale-url]
 
-<!-- <p align="right">(<a href="#readme-top">back to top</a>)</p> -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -72,7 +98,7 @@ If you have a suggestion that would make this site, please fork the repo and cre
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -115,7 +141,7 @@ David Angell - [@DavidJAngell42](https://twitter.com/DavidJAngell42) - davidjang
 [license-url]: https://github.com/DavidAngell/typing-game/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
-<!-- [product-screenshot]: images/screenshot.png -->
+[product-screenshot]: public/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
